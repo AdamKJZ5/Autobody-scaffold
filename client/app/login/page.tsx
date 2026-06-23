@@ -23,6 +23,15 @@ export default function LoginPage() {
     })
 
     if (result?.error) {
+      await new Promise(r => setTimeout(r, 500))
+      result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      })
+    }
+
+    if (result?.error) {
       setError("Invalid email or password")
       setLoading(false)
       return

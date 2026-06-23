@@ -1,10 +1,15 @@
 import { prisma } from "../lib/db"
+import bcrypt from "bcryptjs"
 
 async function main() {
-  const user = await prisma.user.create({
-    data: {
+  const passwordHash = await bcrypt.hash("password123", 12)
+
+  const user = await prisma.user.upsert({
+    where: { email: "test@autobody.com" },
+    update: { passwordHash },
+    create: {
       email: "test@autobody.com",
-      passwordHash: "placeholder",
+      passwordHash,
       role: "CUSTOMER",
       customer: {
         create: {
@@ -15,10 +20,7 @@ async function main() {
     },
   })
 
-  console.log("Created user:", user)
-
-  const allUsers = await prisma.user.findMany({ include: { customer: true } })
-  console.log("All users:", allUsers)
+  console.log("Seeded user:", user.email)
 }
 
 main()
