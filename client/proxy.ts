@@ -5,8 +5,8 @@ export default auth((req) => {
   const { pathname } = req.nextUrl
   const isLoggedIn = !!req.auth
 
-  const isAdminRoute = pathname.startsWith("/admin")
   const isPortalRoute = pathname.startsWith("/portal")
+  const isAdminRoute = pathname.startsWith("/admin") && pathname !== "/admin/login"
 
   if (isPortalRoute && !isLoggedIn) {
     return NextResponse.redirect(new URL("/login", req.url))
