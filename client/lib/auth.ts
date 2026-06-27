@@ -1,8 +1,18 @@
+import type { DefaultSession } from "next-auth"
 import NextAuth from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import { prisma } from "./db"
 import bcrypt from "bcryptjs"
 import { z } from "zod"
+
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string
+      role: string
+    } & DefaultSession["user"]
+  }
+}
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   session: { strategy: "jwt" },
@@ -17,11 +27,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           password: z.string().min(6),
         }).safeParse(credentials)
 
-        if (!parsed.success) return null
+        if (!parsed.success) {
+          console.log("[auth] Validation failed:", parsed.error)
+          return null
+        }
+
+        console.log("[auth] Looking up user:", parsed.data.email)
 
         const user = await prisma.user.findUnique({
           where: { email: parsed.data.email },
         })
+
+        console.log("[auth] User found:", !!user)
 
         if (!user) return null
 
@@ -29,6 +46,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           parsed.data.password,
           user.passwordHash
         )
+
+        console.log("[auth] Password match:", passwordMatch)
 
         if (!passwordMatch) return null
 
