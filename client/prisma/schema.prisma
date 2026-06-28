@@ -39,6 +39,8 @@ model Customer {
   user      User     @relation(fields: [userId], references: [id])
   firstName String
   lastName  String
+  jobs Job[]
+  
 }
 
 model Employee {
@@ -49,4 +51,32 @@ model Employee {
   lastName      String
   role          Role
   certifications String[]
+}
+
+enum JobStatus {
+  RECEIVED
+  DISASSEMBLY
+  PARTS_ORDERED
+  BODY_WORK
+  PAINT
+  REASSEMBLY
+  QUALITY_CHECK
+  READY
+  DELIVERED
+}
+
+model Job {
+  id                  String    @id @default(cuid())
+  customerId          String
+  customer            Customer  @relation(fields: [customerId], references: [id])
+  status              JobStatus @default(RECEIVED)
+  vehicleYear         Int
+  vehicleMake         String
+  vehicleModel        String
+  vehicleVin          String?
+  internalNotes       String?
+  estimatedCompletion DateTime?
+  actualCompletion    DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 }
